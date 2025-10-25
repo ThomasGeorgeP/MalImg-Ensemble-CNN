@@ -10,6 +10,8 @@ import torch.nn as nn
 import torch.cuda as cuda
 import torch.optim as optim
 import pathlib
+from torch.optim.lr_scheduler import ReduceLROnPlateau
+
 
 model_dir=pathlib.Path("./model/")
 model_dir.mkdir(exist_ok=True,parents=True)
@@ -19,8 +21,8 @@ model_path=model_dir/"model.pth"
 
 #printing versions for future reference
 
-IMAGE_SIZE=(128,128)
-BATCH_SIZE=64
+IMAGE_SIZE=(256,256)
+BATCH_SIZE=16
 # print(f'''  Versions
 # Torch: {torch.__version__}
 # Torchvision: {torchvision.__version__}
@@ -80,9 +82,9 @@ try:
 except:
     model=MalImgCNN().to(DEFAULT_DEVICE)
 
-optimizer=optim.Adam(model.parameters(),lr=0.00003,weight_decay=1e-05)
+optimizer=optim.Adam(model.parameters(),lr=0.0003,weight_decay=1e-05)
 criterion=nn.CrossEntropyLoss()
-
+scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=10)
 epochs=100
 
 for epoch in range(epochs):
@@ -99,6 +101,7 @@ for epoch in range(epochs):
     t_output,t_label=next(iter(test_dataloader))
     t_output,t_label=t_output.to(DEFAULT_DEVICE),t_label.to(DEFAULT_DEVICE)
     loss=criterion.forward(model(t_output),t_label)
+    scheduler.step(loss.item())
     print(f"Epoch {epoch}: Loss: {loss}")
     if epoch%3==0:
         torch.save(model.state_dict(),param_path,)
