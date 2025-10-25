@@ -9,10 +9,17 @@ import matplotlib
 import torch.nn as nn
 import torch.cuda as cuda
 import torch.optim as optim
+import pathlib
+
+model_dir=pathlib.Path("./model/")
+model_dir.mkdir(exist_ok=True,parents=True)
+
+param_path=model_dir/"parameters.pth"
+model_path=model_dir/"model.pth"
 
 #printing versions for future reference
 
-IMAGE_SIZE=(512,512)
+IMAGE_SIZE=(128,128)
 
 # print(f'''  Versions
 # Torch: {torch.__version__}
@@ -24,8 +31,8 @@ IMAGE_SIZE=(512,512)
 if cuda.is_available():
 
     DEFAULT_DEVICE="cuda"
-    cuda.manual_seed_all(120)
-    torch.manual_seed(120)
+    cuda.manual_seed_all(69)
+    torch.manual_seed(69)
 
 else:
 
@@ -42,7 +49,7 @@ test_dataloader=DataLoader(test_dataset,batch_size=8,shuffle=True,pin_memory=Tru
 
 
 class MalImgCNN(nn.Module):
-    def __init__(self, layers=[32,64,128,256], dropout_rate=0.1):
+    def __init__(self, layers=[32,64,128,256], dropout_rate=0.2):
         super().__init__()
         previous_channels = 1  # grayscale input
         convolutional_layers = []
@@ -66,9 +73,14 @@ class MalImgCNN(nn.Module):
 
     def forward(self, x):
         return self.network(x).flatten(start_dim=1)
+try:
+    model=MalImgCNN().to(DEFAULT_DEVICE)
+    model.load_state_dict(torch.load(param_path,weights_only=True,map_location=DEFAULT_DEVICE))
+    print("Model Loaded")
+except:
+    model=MalImgCNN().to(DEFAULT_DEVICE)
 
-model=MalImgCNN().to(DEFAULT_DEVICE)
-optimizer=optim.Adam(model.parameters(),lr=0.001,weight_decay=1e-05)
+optimizer=optim.Adam(model.parameters(),lr=0.00003,weight_decay=1e-05)
 criterion=nn.CrossEntropyLoss()
 
 epochs=100
@@ -88,15 +100,12 @@ for epoch in range(epochs):
     t_output,t_label=t_output.to(DEFAULT_DEVICE),t_label.to(DEFAULT_DEVICE)
     loss=criterion.forward(model(t_output),t_label)
     print(f"Epoch {epoch}: Loss: {loss}")
+    if epoch%3==0:
+        torch.save(model.state_dict(),param_path,)
+        torch.save(model,model_path)
 
 #saving the model
-import pathlib
 
-model_dir=pathlib.Path("./model/")
-model_dir.mkdir(exist_ok=True,parents=True)
-
-param_path=model_dir/"parameters.pth"
-model_path=model_dir/"model.pth"
 
 torch.save(model.state_dict(),param_path)
 torch.save(model,model_path)
