@@ -8,9 +8,11 @@ import matplotlib.pyplot as plt
 import matplotlib
 import torch.nn as nn
 import torch.cuda as cuda
+import torch.optim as optim
 
 #printing versions for future reference
 
+IMAGE_SIZE=(512,512)
 
 # print(f'''  Versions
 # Torch: {torch.__version__}
@@ -30,11 +32,71 @@ else:
     DEFAULT_DEVICE="cpu"
     torch.manual_seed(120)
 
-transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.2860,), (0.3530,)),transforms.Resize((512,512))])
+transform=transforms.Compose([transforms.Grayscale(1),transforms.ToTensor(),transforms.Normalize((0.2860,), (0.3530,)),transforms.Resize(IMAGE_SIZE)])
 train_dataset=torchvision.datasets.ImageFolder("./train/",transform=transform)
 
-train_dataloader=DataLoader(train_dataset,batch_size=32,shuffle=True,pin_memory=True,num_workers=8) #8 out of 16 is good for my pc, change if needed
+train_dataloader=DataLoader(train_dataset,batch_size=8,shuffle=True,pin_memory=True,num_workers=8) #8 out of 16 is good for my pc, change if needed
 
-for batchx,batchy in train_dataloader:
-    print(batchx,batchy)
-    break
+test_dataset=torchvision.datasets.ImageFolder("./test/",transform=transform)
+test_dataloader=DataLoader(test_dataset,batch_size=8,shuffle=True,pin_memory=True,num_workers=8)
+
+
+class MalImgCNN(nn.Module):
+    def __init__(self, layers=[32,64,128,256], dropout_rate=0.1):
+        super().__init__()
+        previous_channels = 1  # grayscale input
+        convolutional_layers = []
+
+        for out_channels in layers:
+            convolutional_layers.append(nn.Conv2d(
+                in_channels=previous_channels,
+                out_channels=out_channels,
+                kernel_size=3,
+                stride=1,
+                padding=1
+            ))
+            convolutional_layers.append(nn.LeakyReLU())
+            convolutional_layers.append(nn.Dropout2d(dropout_rate))
+            convolutional_layers.append(nn.BatchNorm2d(out_channels))
+            convolutional_layers.append(nn.MaxPool2d(2))
+
+            previous_channels = out_channels
+
+        self.network = nn.Sequential(*convolutional_layers)
+
+    def forward(self, x):
+        return self.network(x).flatten(start_dim=1)
+
+model=MalImgCNN().to(DEFAULT_DEVICE)
+optimizer=optim.Adam(model.parameters(),lr=0.001,weight_decay=1e-05)
+criterion=nn.CrossEntropyLoss()
+
+epochs=100
+
+for epoch in range(epochs):
+    for batchx,batchy in train_dataloader:
+        batchx, batchy = batchx.to(DEFAULT_DEVICE), batchy.to(DEFAULT_DEVICE)
+        model.train()
+        optimizer.zero_grad()
+
+        loss=criterion.forward(model(batchx),batchy)
+        loss.backward()
+
+        optimizer.step()
+    model.eval()
+    t_output,t_label=next(iter(test_dataloader))
+    t_output,t_label=t_output.to(DEFAULT_DEVICE),t_label.to(DEFAULT_DEVICE)
+    loss=criterion.forward(model(t_output),t_label)
+    print(f"Epoch {epoch}: Loss: {loss}")
+
+#saving the model
+import pathlib
+
+model_dir=pathlib.Path("./model/")
+model_dir.mkdir(exist_ok=True,parents=True)
+
+param_path=model_dir/"parameters.pth"
+model_path=model_dir/"model.pth"
+
+torch.save(model.state_dict(),param_path)
+torch.save(model,model_path)
