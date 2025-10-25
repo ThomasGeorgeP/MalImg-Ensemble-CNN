@@ -20,7 +20,7 @@ model_path=model_dir/"model.pth"
 #printing versions for future reference
 
 IMAGE_SIZE=(128,128)
-
+BATCH_SIZE=64
 # print(f'''  Versions
 # Torch: {torch.__version__}
 # Torchvision: {torchvision.__version__}
@@ -42,10 +42,10 @@ else:
 transform=transforms.Compose([transforms.Grayscale(1),transforms.ToTensor(),transforms.Normalize((0.2860,), (0.3530,)),transforms.Resize(IMAGE_SIZE)])
 train_dataset=torchvision.datasets.ImageFolder("./train/",transform=transform)
 
-train_dataloader=DataLoader(train_dataset,batch_size=8,shuffle=True,pin_memory=True,num_workers=8) #8 out of 16 is good for my pc, change if needed
+train_dataloader=DataLoader(train_dataset,batch_size=BATCH_SIZE,shuffle=True,pin_memory=True,num_workers=8) #8 out of 16 is good for my pc, change if needed
 
 test_dataset=torchvision.datasets.ImageFolder("./test/",transform=transform)
-test_dataloader=DataLoader(test_dataset,batch_size=8,shuffle=True,pin_memory=True,num_workers=8)
+test_dataloader=DataLoader(test_dataset,batch_size=BATCH_SIZE,shuffle=True,pin_memory=True,num_workers=8)
 
 
 class MalImgCNN(nn.Module):
