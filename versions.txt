@@ -1,0 +1,5 @@
+Versions
+Torch: 2.9.0+cu128
+Torchvision: 0.24.0+cu128
+Numpy: 1.26.4
+Matplotlib: 3.10.7

@@ -11,12 +11,13 @@ import torch.cuda as cuda
 
 #printing versions for future reference
 
-print(f'''  Versions
-Torch: {torch.__version__}
-Torchvision: {torchvision.__version__}
-Numpy: {np.__version__}
-Matplotlib: {matplotlib.__version__}
-''')
+
+# print(f'''  Versions
+# Torch: {torch.__version__}
+# Torchvision: {torchvision.__version__}
+# Numpy: {np.__version__}
+# Matplotlib: {matplotlib.__version__}
+# ''')
 
 if cuda.is_available():
 
@@ -30,6 +31,10 @@ else:
     torch.manual_seed(120)
 
 transform=transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.2860,), (0.3530,)),transforms.Resize((512,512))])
-train_dataset=torchvision.datasets.ImageFolder("./train/",transform=transform,)
+train_dataset=torchvision.datasets.ImageFolder("./train/",transform=transform)
 
-print(type(train_dataset))
+train_dataloader=DataLoader(train_dataset,batch_size=32,shuffle=True,pin_memory=True,num_workers=8) #8 out of 16 is good for my pc, change if needed
+
+for batchx,batchy in train_dataloader:
+    print(batchx,batchy)
+    break
