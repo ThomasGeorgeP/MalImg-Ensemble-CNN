@@ -56,8 +56,8 @@ if __name__=="__main__":
 
     #printing versions for future reference
 
-    IMAGE_SIZE=(512,512)
-    BATCH_SIZE=8
+    IMAGE_SIZE=(128,128)
+    BATCH_SIZE=64
     # print(f'''  Versions
     # Torch: {torch.__version__}
     # Torchvision: {torchvision.__version__}
@@ -86,7 +86,7 @@ if __name__=="__main__":
 
     try:
         model=MalImgCNN().to(DEFAULT_DEVICE)
-        model.load_state_dict(torch.load(param_path,weights_only=True,map_location=DEFAULT_DEVICE))  #random initialization gives better op when ensembling
+        #model.load_state_dict(torch.load(param_path,weights_only=True,map_location=DEFAULT_DEVICE))  #random initialization gives better op when ensembling
         print("Model Loaded")
     except:
         model=MalImgCNN().to(DEFAULT_DEVICE)
