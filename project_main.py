@@ -88,21 +88,35 @@ scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=10)
 epochs=100
 
 for epoch in range(epochs):
+
+    avg_train_loss=0
     for batchx,batchy in train_dataloader:
         batchx, batchy = batchx.to(DEFAULT_DEVICE), batchy.to(DEFAULT_DEVICE)
         model.train()
         optimizer.zero_grad()
 
         loss=criterion.forward(model(batchx),batchy)
+        avg_train_loss += loss.item()
         loss.backward()
-
+        
         optimizer.step()
     model.eval()
-    t_output,t_label=next(iter(test_dataloader))
-    t_output,t_label=t_output.to(DEFAULT_DEVICE),t_label.to(DEFAULT_DEVICE)
-    loss=criterion.forward(model(t_output),t_label)
-    scheduler.step(loss.item())
+    total_val_loss=0
+    with torch.no_grad(): # Turn off gradients for validation
+        for batchx_val, batchy_val in test_dataloader:
+            batchx_val, batchy_val = batchx_val.to(DEFAULT_DEVICE), batchy_val.to(DEFAULT_DEVICE)
+            
+            val_outputs = model(batchx_val)
+            val_loss = criterion(val_outputs, batchy_val)
+            total_val_loss += val_loss.item()
+            
+    avg_val_loss = total_val_loss / len(test_dataloader)
+    avg_train_loss/=len(train_dataloader)
     print(f"Epoch {epoch}: Loss: {loss}")
+    print(f"Epoch {epoch}: Train Loss: {avg_train_loss:.4f} | Val Loss: {avg_val_loss:.4f}")
+
+    # Scheduler steps on the STABLE average validation loss
+    scheduler.step(avg_val_loss)
     if epoch%3==0:
         torch.save(model.state_dict(),param_path,)
         torch.save(model,model_path)
