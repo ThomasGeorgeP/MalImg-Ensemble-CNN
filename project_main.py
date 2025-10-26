@@ -21,8 +21,8 @@ model_path=model_dir/"model.pth"
 
 #printing versions for future reference
 
-IMAGE_SIZE=(256,256)
-BATCH_SIZE=16
+IMAGE_SIZE=(512,512)
+BATCH_SIZE=8
 # print(f'''  Versions
 # Torch: {torch.__version__}
 # Torchvision: {torchvision.__version__}
@@ -77,7 +77,7 @@ class MalImgCNN(nn.Module):
         return self.network(x).flatten(start_dim=1)
 try:
     model=MalImgCNN().to(DEFAULT_DEVICE)
-    model.load_state_dict(torch.load(param_path,weights_only=True,map_location=DEFAULT_DEVICE))
+    #model.load_state_dict(torch.load(param_path,weights_only=True,map_location=DEFAULT_DEVICE))  random initialization gives better op when ensembling
     print("Model Loaded")
 except:
     model=MalImgCNN().to(DEFAULT_DEVICE)
