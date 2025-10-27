@@ -13,9 +13,22 @@ from multidataset import MultiScaleDataset
 from sys import exit
 
 class EnsembleANN(nn.Module):
-    def __init__(self,CNN512:MalImgCNN,CNN256:MalImgCNN,CNN128:MalImgCNN,layers:list[int]=[128,64],droupout:float=0.5):
+    def __init__(self,layers:list[int]=[128,64],droupout:float=0.5,):
         super().__init__()
+        self.DEFAULT_DEVICE=("cuda" if cuda.is_available() else "cpu")
+        CNN512=MalImgCNN()
+        CNN256=MalImgCNN()
+        CNN128=MalImgCNN()
 
+        try:
+            CNN512.load_state_dict(torch.load("model/parameters512.pth",map_location=self.DEFAULT_DEVICE,weights_only=True))
+            CNN256.load_state_dict(torch.load("model/parameters256.pth",map_location=self.DEFAULT_DEVICE,weights_only=True))
+            CNN128.load_state_dict(torch.load("model/parameters128.pth",map_location=self.DEFAULT_DEVICE,weights_only=True))
+        except:
+            print("Couldnt Load all Base Learners, Please Ensure weights are at model/parameters512,256,128")
+            exit()
+
+        
         self.baselearners = nn.ModuleList([CNN512, CNN256, CNN128])
         #inputsize fixed at 768 (256*3 256 from each CNN)
         previous_size=768
@@ -30,8 +43,11 @@ class EnsembleANN(nn.Module):
 
         self.network=nn.Sequential(*self.layers)
         #self.transform512=transforms.Resize((512,512))
-    def forward(self,x512:torch.Tensor,x256:torch.Tensor,x128:torch.Tensor):
+    def forward(self,x:list[torch.Tensor]):
         self.baselearners.eval()
+        x512=x[0].to(device=self.DEFAULT_DEVICE)
+        x256=x[1].to(device=self.DEFAULT_DEVICE)
+        x128=x[2].to(device=self.DEFAULT_DEVICE)
         with torch.no_grad():
             y512=self.baselearners[0].network(x512)
             y256=self.baselearners[1].network(x256)
@@ -61,19 +77,14 @@ if __name__=="__main__":
     test_dataloader=DataLoader(test_dataset,batch_size=BATCH_SIZE,pin_memory=True,num_workers=8,shuffle=True)
 
     
-    base512=MalImgCNN()
-    base256=MalImgCNN()
-    base128=MalImgCNN()
+
+    model=EnsembleANN().to(DEFAULT_DEVICE)
 
     try:
-        base512.load_state_dict(torch.load("model/parameters512.pth",map_location=DEFAULT_DEVICE,weights_only=True))
-        base256.load_state_dict(torch.load("model/parameters256.pth",map_location=DEFAULT_DEVICE,weights_only=True))
-        base128.load_state_dict(torch.load("model/parameters128.pth",map_location=DEFAULT_DEVICE,weights_only=True))
+        model.load_state_dict(torch.load("model/ensembleparams.pth",map_location=DEFAULT_DEVICE,weights_only=True))
+        print("Model Loaded! ")
     except:
-        print("Couldnt Load all Base Learners, Please Ensure weights are at model/parameters512,256,128")
-
-    model=EnsembleANN(base512,base256,base128).to(DEFAULT_DEVICE)
-
+        pass
     optimizer=optim.Adam(model.parameters(),lr=0.00003,weight_decay=1e-05)
     criterion=nn.CrossEntropyLoss()
     scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5,)
@@ -85,11 +96,10 @@ if __name__=="__main__":
         model.train()
         for batchx,batchy in train_dataloader:
             
-            x512,x256,x128=batchx[0].to(DEFAULT_DEVICE),batchx[1].to(DEFAULT_DEVICE),batchx[2].to(DEFAULT_DEVICE)
             batchy=batchy.to(DEFAULT_DEVICE)
             optimizer.zero_grad()
 
-            loss=criterion.forward(model.forward(x512,x256,x128),batchy)
+            loss=criterion.forward(model.forward(batchx),batchy)
             loss.backward()
             total_training_loss+=loss.item()
 
@@ -102,9 +112,8 @@ if __name__=="__main__":
                 test_loss=0
                 for batchx,batchy in test_dataloader:
 
-                    x512,x256,x128=batchx[0].to(DEFAULT_DEVICE),batchx[1].to(DEFAULT_DEVICE),batchx[2].to(DEFAULT_DEVICE)
                     batchy=batchy.to(DEFAULT_DEVICE)
-                    loss=criterion.forward(model.forward(x512,x256,x128),batchy)
+                    loss=criterion.forward(model.forward(batchx),batchy)
                     test_loss+=loss.item()
 
                 test_loss/=len(test_dataloader)
