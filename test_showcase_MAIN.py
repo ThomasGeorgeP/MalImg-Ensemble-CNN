@@ -109,3 +109,15 @@ class ImageBrowser:
         self.show_image()
 
 browser = ImageBrowser(test_dataset, model)
+
+
+wrong_count=0
+for batchx,batchy in test_dataset:
+    batchx=[i.unsqueeze(dim=1) for i in batchx]
+    output=model.forward(batchx)
+    probability=nn.functional.softmax(output,dim=1)
+    _,prediction=torch.max(probability,1)
+
+    if prediction!=batchy:
+        wrong_count+=1
+print(f"Wrong count: {wrong_count} Out of {len(test_dataset)}")
