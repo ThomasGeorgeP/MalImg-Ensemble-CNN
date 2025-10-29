@@ -48,7 +48,7 @@ class ImageBrowser:
         
         self.list_position = 0
 
-        self.fig = plt.figure(figsize=(8, 4))
+        self.fig = plt.figure(figsize=(16, 8))
         self.ax_img = self.fig.add_axes([0.05, 0.1, 0.4, 0.8]) 
         self.ax_bar = self.fig.add_axes([0.55, 0.1, 0.4, 0.8])
 
@@ -70,14 +70,10 @@ class ImageBrowser:
 
         img_, label = self.dataset[index]
         
-        img_to_show = img_[1]
+        img_to_show = img_[3]
 
 
-        model_input = [
-            img_[0].unsqueeze(0),  
-            img_[1].unsqueeze(0), 
-            img_[2].unsqueeze(0)   #unsqueezing cause the baseCNN takes 4D
-        ]
+        model_input = [i.unsqueeze(0) for i in img_] #unsqueezing cause the baseCNN takes 4D
 
         with torch.no_grad():
             output = self.model(model_input)
@@ -113,7 +109,7 @@ browser = ImageBrowser(test_dataset, model)
 
 wrong_count=0
 for batchx,batchy in test_dataset:
-    batchx=[i.unsqueeze(dim=1) for i in batchx]
+    batchx=[i.unsqueeze(0) for i in batchx]
     output=model.forward(batchx)
     probability=nn.functional.softmax(output,dim=1)
     _,prediction=torch.max(probability,1)

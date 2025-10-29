@@ -31,6 +31,11 @@ class MultiScaleDataset(Dataset):
                                 transforms.ToTensor(),
                                 transforms.Normalize((0.2860,), (0.3530,))
                             ])
+        self.transformOG = transforms.Compose([
+                                transforms.Grayscale(1),
+                                transforms.ToTensor(),
+                                transforms.Normalize((0.2860,), (0.3530,))
+                            ])
 
     def __len__(self):
         return len(self.dataset)
@@ -45,6 +50,6 @@ class MultiScaleDataset(Dataset):
         img128 = self.transform128(image)
         img256 = self.transform256(image)
         img512 = self.transform512(image)
-
-        return (img128, img256, img512), label
+        imgOG=self.transformOG(image)
+        return (img128, img256, img512,imgOG), label
     
