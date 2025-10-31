@@ -13,6 +13,23 @@ from multidataset import MultiScaleDataset
 from sys import exit
 
 class EnsembleANN(nn.Module):
+    """
+A simple ANN meta-learner for ensembling model predictions.
+
+This class defines a "stacked" ensemble model. It is a small
+neural network that takes the output predictions (logits or
+probabilities) from multiple other models as its input.
+
+It then learns to weigh these predictions to produce a single,
+combined, and hopefully more accurate final classification.
+
+Args:
+    input_size (int): The total number of input features.
+        (e.g., num_models * num_classes_per_model).
+    num_classes (int): The number of final output classes.
+    hidden_size (int, optional): The number of neurons in the
+        hidden layer.
+"""
     def __init__(self,layers:list[int]=[128,64],droupout:float=0.5,):
         super().__init__()
         self.DEFAULT_DEVICE=("cuda" if cuda.is_available() else "cpu")

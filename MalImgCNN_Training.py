@@ -34,6 +34,30 @@ malimg_classes = [
     'VB.AT','Wintrim.BX','Yuner.A']
 
 class MalImgCNN(nn.Module):
+    '''
+================================================================================
+MalImgCNN_Training.py
+================================================================================
+
+This script is the main training and validation engine for the MalImg CNN
+classifier.
+
+It performs the following key operations:
+1.  Loads the MalImg image dataset using the custom `multidataset.py` loader.
+2.  Splits the data into training, validation, and test sets.
+3.  Initializes the CNN model architecture (defined in a separate model file,
+    assumed to be imported).
+4.  Defines the loss function (e.g., Cross-Entropy Loss) and the optimizer
+    (e.g., Adam).
+5.  Runs the main training loop for a specified number of epochs.
+6.  For each epoch, it:
+    - Trains the model on the training data.
+    - Evaluates the model's performance on the validation data.
+7.  Calculates and logs key metrics (e.g., accuracy, loss).
+8.  Saves the best performing model checkpoint (based on validation accuracy)
+    to the './model/' directory.
+
+'''
     def __init__(self, layers=[32,64,128,256], dropout_rate=0.2):
         super().__init__()
         previous_channels = 1  # grayscale input (even the images were b/w when stored in dir, linux processes it as RGB)

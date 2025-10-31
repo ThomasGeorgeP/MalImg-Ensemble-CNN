@@ -51,7 +51,7 @@ class ImageBrowser:
         self.fig = plt.figure(figsize=(16, 8))
         self.ax_img = self.fig.add_axes([0.05, 0.1, 0.4, 0.8]) 
         self.ax_bar = self.fig.add_axes([0.55, 0.1, 0.4, 0.8])
-
+        plt.title("Malware Classification")
        
         axprev = plt.axes([0.2, 0.01, 0.1, 0.05])
         axnext = plt.axes([0.7, 0.01, 0.1, 0.05])
