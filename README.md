@@ -90,8 +90,7 @@ This "Conv -> Pool -> GAP" structure is modern, efficient, and less prone to ove
 
 *(Note: Data in `train/`, `test/`, and `val/` is assumed to be pre-converted to images.)*
 
-### 1. Check GPU Setup
-
-Verify that PyTorch can detect your GPU.
-```bash
-python check_gpu.py
+### 1. Run Setup.py
+   To extract all the image folders and make sure all dependencies are installed
+### 2. Main file test_showcase_MAIN.py
+   This is the main file that demos the project
