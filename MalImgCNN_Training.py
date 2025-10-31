@@ -7,7 +7,7 @@ import torch.cuda as cuda
 import torch.optim as optim
 import pathlib
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-
+import sys
 malimg_classes = [
     'Adialer.C',
     'Agent.FYI',
@@ -121,11 +121,17 @@ if __name__=="__main__":
         torch.manual_seed(120)
 
     transform=transforms.Compose([transforms.Grayscale(1),transforms.Resize(IMAGE_SIZE),transforms.ToTensor(),transforms.Normalize((0.2860,), (0.3530,))])
-    train_dataset=torchvision.datasets.ImageFolder("./train/",transform=transform)
-
+    try:
+        train_dataset=torchvision.datasets.ImageFolder("./train/",transform=transform)
+    except:
+        print("Please download and extract the folders from https://drive.google.com/file/d/1hoSiS0YXXU6yfDYdbpYKCD-10QCjF1jr/view?usp=sharing")
+        sys.exit()
     train_dataloader=DataLoader(train_dataset,batch_size=BATCH_SIZE,shuffle=True,pin_memory=True,num_workers=8) #8 out of 16 is good for my pc, change if needed
-
-    test_dataset=torchvision.datasets.ImageFolder("./test/",transform=transform)
+    try:
+        test_dataset=torchvision.datasets.ImageFolder("./test/",transform=transform)
+    except:
+        print("Please download and extract the folders from https://drive.google.com/file/d/1hoSiS0YXXU6yfDYdbpYKCD-10QCjF1jr/view?usp=sharing")
+        sys.exit()
     test_dataloader=DataLoader(test_dataset,batch_size=BATCH_SIZE,shuffle=True,pin_memory=True,num_workers=8)
 
     try:

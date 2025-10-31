@@ -80,15 +80,19 @@ Args:
 if __name__=="__main__":
     BATCH_SIZE=8
     DEFAULT_DEVICE=("cuda" if cuda.is_available() else "cpu")
-
-    train_image_folder=torchvision.datasets.ImageFolder("train/")
-
+    try:
+        train_image_folder=torchvision.datasets.ImageFolder("train/")
+    except:
+        print("Please download and extract the folders from https://drive.google.com/file/d/1hoSiS0YXXU6yfDYdbpYKCD-10QCjF1jr/view?usp=sharing")
+        exit()
     train_dataset=MultiScaleDataset(train_image_folder)
 
     train_dataloader=DataLoader(train_dataset,batch_size=BATCH_SIZE,pin_memory=True,num_workers=8,shuffle=True)
-
-    test_image_folder=torchvision.datasets.ImageFolder("test/")
-
+    try:
+        test_image_folder=torchvision.datasets.ImageFolder("test/")
+    except:
+        print("Please download and extract the folders from https://drive.google.com/file/d/1hoSiS0YXXU6yfDYdbpYKCD-10QCjF1jr/view?usp=sharing")
+        exit()
     test_dataset=MultiScaleDataset(test_image_folder)
 
     test_dataloader=DataLoader(test_dataset,batch_size=BATCH_SIZE,pin_memory=True,num_workers=8,shuffle=True)

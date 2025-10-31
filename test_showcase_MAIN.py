@@ -8,7 +8,7 @@ import torch.nn as nn
 from overhead_ensemble import EnsembleANN 
 from multidataset import MultiScaleDataset 
 import random 
-
+import sys
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 
@@ -19,9 +19,11 @@ class_names = [
     'Lolyda.AT', 'Malex.gen!J', 'Obfuscator.AD', 'Rbot!gen', 'Skintrim.N',
     'Swizzor.gen!E', 'Swizzor.gen!I', 'VB.AT', 'Wintrim.BX', 'Yuner.A'
 ]
-
-test_image_folder = torchvision.datasets.ImageFolder("val/")
-
+try:
+    test_image_folder = torchvision.datasets.ImageFolder("val/")
+except:
+        print("Please download and extract the folders from https://drive.google.com/file/d/1hoSiS0YXXU6yfDYdbpYKCD-10QCjF1jr/view?usp=sharing")
+        sys.exit()
 test_dataset = MultiScaleDataset(test_image_folder)
 
 model_path = "model/ensembleparams_final.pth"

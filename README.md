@@ -4,6 +4,8 @@ A project that explores the use of Convolutional Neural Networks (CNNs) to class
 
 ---
 
+PLEASE DOWNLOAD AND EXTRACT https://drive.google.com/file/d/1hoSiS0YXXU6yfDYdbpYKCD-10QCjF1jr/view?usp=sharing
+
 ## 📖 Table of Contents
 
 * [Core Concept](#-core-concept)
@@ -90,7 +92,7 @@ This "Conv -> Pool -> GAP" structure is modern, efficient, and less prone to ove
 
 *(Note: Data in `train/`, `test/`, and `val/` is assumed to be pre-converted to images.)*
 
-### 1. Run Setup.py
-   To extract all the image folders and make sure all dependencies are installed
+### 1. DOWNLOAD AND EXTRACT https://drive.google.com/file/d/1hoSiS0YXXU6yfDYdbpYKCD-10QCjF1jr/view?usp=sharing
+
 ### 2. Main file test_showcase_MAIN.py
    This is the main file that demos the project
